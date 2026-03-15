@@ -1,7 +1,54 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime
 
 st.set_page_config(layout="wide")
+
+# ---------------- CSS STYLE ----------------
+
+st.markdown("""
+<style>
+
+.stApp{
+background:linear-gradient(135deg,#020617,#0f172a,#1e293b);
+color:white;
+font-family: 'Segoe UI', sans-serif;
+}
+
+section[data-testid="stSidebar"]{
+background:linear-gradient(180deg,#0f172a,#1e293b);
+border-right:1px solid #334155;
+}
+
+section[data-testid="stSidebar"] *{
+color:#e2e8f0;
+}
+
+h1{color:#f8fafc;}
+h2{color:#22c55e;}
+h3{color:#f87171;}
+h4{color:#34d399;}
+
+[data-baseweb="select"]{
+background:#1f2937;
+border-radius:10px;
+border:1px solid #334155;
+}
+
+[data-testid="metric-container"]{
+background:linear-gradient(135deg,#4f46e5,#22c55e);
+padding:16px;
+border-radius:14px;
+box-shadow:0px 6px 18px rgba(0,0,0,0.4);
+}
+
+img{
+border-radius:12px;
+box-shadow:0px 6px 18px rgba(0,0,0,0.5);
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------- SIDEBAR ----------------
 
@@ -26,252 +73,249 @@ menu = st.sidebar.radio(
 "🏠 Dashboard",
 "💊 Medicine & Food Safety",
 "🥗 Healthy Menu",
-"🍽 Meal Plan",
-"📓 Food Diary",
-"🏋 Exercises",
-"📊 Progress",
-"🧠 Health Insights"
+"🍽 Meal Plan"
 ]
 )
 
+# ---------------- DATA ----------------
+
+food_list=[
+"Spinach","Broccoli","Carrot","Cucumber","Rice","Apple",
+"Banana","Milk","Bread","Chicken","Fish","Egg","Yogurt",
+"Beans","Oats","Potato","Tomato","Avocado","Orange","Almonds"
+]
+
+medicine_list=[
+"Warfarin","Aspirin","Metformin","Ibuprofen","Paracetamol",
+"Amoxicillin","Atorvastatin"
+]
+
+food_interactions={
+"Warfarin":{
+"avoid":["Spinach","Broccoli","Kale"],
+"safe":["Carrot","Cucumber","Rice"]
+},
+"Aspirin":{
+"avoid":["Fish","Garlic"],
+"safe":["Apple","Oats","Banana"]
+},
+"Metformin":{
+"avoid":["Sugary Foods"],
+"safe":["Beans","Oats","Vegetables"]
+}
+}
+
 # ---------------- DASHBOARD ----------------
 
-if menu == "🏠 Dashboard":
+if menu=="🏠 Dashboard":
 
-    st.title("👋 Welcome Manoj")
-    st.subheader("MedGraphX Smart Health Dashboard")
-
-    col1, col2, col3, col4 = st.columns(4)
+    col1,col2=st.columns([4,1])
 
     with col1:
-        weight = 78
-        change = -1.2
-        arrow = "🔻" if change < 0 else "🔺"
-        st.metric("⚖ Weight", f"{weight} kg", f"{arrow} {change}")
+        st.markdown("# 👋 Welcome Manoj")
+        st.markdown("### MedGraphX Smart Health Dashboard")
 
     with col2:
-        steps = 8050
-        change = 340
-        arrow = "🔺" if change > 0 else "🔻"
-        st.metric("👣 Steps Today", f"{steps}", f"{arrow} {change}")
+        now=datetime.now()
+        st.write("📅",now.strftime("%d %B %Y"))
+
+    st.markdown("---")
+
+    col1,col2,col3=st.columns(3)
+
+    with col1:
+        food=st.selectbox("Food",food_list)
+
+    with col2:
+        disease=st.selectbox(
+        "Disease",
+        ["None","Diabetes","Heart Disease","Blood Pressure"]
+        )
 
     with col3:
-        sleep = 6.5
-        change = -0.4
-        arrow = "🔻" if change < 0 else "🔺"
-        st.metric("😴 Sleep", f"{sleep} hrs", f"{arrow} {change}")
-
-    with col4:
-        water = 1.3
-        change = 0.3
-        arrow = "🔺" if change > 0 else "🔻"
-        st.metric("💧 Water Intake", f"{water} L", f"{arrow} {change}")
+        medicine=st.selectbox("Medicine",medicine_list)
 
     st.markdown("---")
 
-    st.subheader("📊 Daily Health Activity")
+    avoid=[]
+    safe=[]
+    risk="Low"
+    risk_color="green"
 
-    data = {
-        "Activity":["Steps","Calories Burn","Hydration","Sleep"],
-        "Progress":[80,60,50,70]
-    }
+    if medicine in food_interactions:
 
-    df = pd.DataFrame(data)
+        avoid=food_interactions[medicine]["avoid"]
+        safe=food_interactions[medicine]["safe"]
 
-    st.bar_chart(df.set_index("Activity"))
+        if food in avoid:
+            risk="High"
+            risk_color="red"
 
-# ---------------- MEDICINE SAFETY ----------------
+        elif food in safe:
+            risk="Low"
+            risk_color="green"
 
-elif menu == "💊 Medicine & Food Safety":
+        else:
+            risk="Medium"
+            risk_color="orange"
 
-    st.title("💊 Medicine & Food Interaction Checker")
+    else:
+        avoid=["No major restrictions"]
+        safe=["Apple","Rice","Vegetables"]
+        risk="Low"
 
-    medicine = st.selectbox(
-        "Select Medicine",
-        ["Warfarin","Aspirin","Metformin","Ibuprofen","Paracetamol","Amoxicillin"]
+    st.markdown(
+        f"<h3 style='color:{risk_color};font-weight:bold;'>⚠ Risk Level : {risk}</h3>",
+        unsafe_allow_html=True
     )
 
-    medicine_data = {
-
-        "Warfarin":{
-            "avoid":["Spinach","Broccoli","Kale"],
-            "safe":["Carrot","Cucumber","Rice"],
-            "reason":"Vitamin K foods reduce blood thinning effect."
-        },
-
-        "Aspirin":{
-            "avoid":["Alcohol","Spicy food","Fried food"],
-            "safe":["Banana","Yogurt","Oatmeal"],
-            "reason":"Spicy foods may irritate stomach."
-        },
-
-        "Metformin":{
-            "avoid":["Sugary drinks","Candy"],
-            "safe":["Whole grains","Vegetables","Nuts"],
-            "reason":"Healthy fiber helps control diabetes."
-        },
-
-        "Ibuprofen":{
-            "avoid":["Alcohol"],
-            "safe":["Milk","Bread","Banana"],
-            "reason":"Taking with food protects stomach."
-        },
-
-        "Paracetamol":{
-            "avoid":["Alcohol"],
-            "safe":["Light meals","Soup"],
-            "reason":"Alcohol may damage liver."
-        },
-
-        "Amoxicillin":{
-            "avoid":["Alcohol","Acidic drinks"],
-            "safe":["Yogurt","Fruit"],
-            "reason":"Probiotic foods restore gut bacteria."
-        }
-
-    }
-
-    data = medicine_data[medicine]
-
-    col1,col2 = st.columns(2)
+    col1,col2=st.columns(2)
 
     with col1:
-        st.error("❌ Foods To Avoid")
-        for food in data["avoid"]:
-            st.write("•",food)
+        st.markdown("### ❌ Foods To Avoid")
+        for f in avoid:
+            st.write(f"• {f}")
 
     with col2:
-        st.success("✅ Recommended Foods")
-        for food in data["safe"]:
-            st.write("•",food)
-
-    st.info("ℹ Reason: "+data["reason"])
+        st.markdown("### ✅ Recommended Foods")
+        for f in safe:
+            st.write(f"• {f}")
 
     st.markdown("---")
 
-    st.subheader("🩺 Diet Suggestions For Health Issues")
+    col1,col2,col3,col4=st.columns(4)
 
-    issue = st.selectbox(
-    "Select Health Issue",
-    ["Diabetes","High Blood Pressure","Fever","Cold","Heart Health"]
-    )
+    with col1:
+        st.metric("Weight","78 kg","-1.2")
 
-    issue_food = {
+    with col2:
+        st.metric("Steps","8050","+340")
 
-    "Diabetes":["Whole grains","Leafy vegetables","Nuts","Beans"],
+    with col3:
+        st.metric("Sleep","6.5 hrs","-0.4")
 
-    "High Blood Pressure":["Banana","Spinach","Low salt foods"],
+    with col4:
+        st.metric("Water Intake","1.3 L","+0.3")
 
-    "Fever":["Soup","Coconut water","Fruit juices"],
+# ---------------- MEDICINE & FOOD SAFETY ----------------
 
-    "Cold":["Ginger tea","Honey","Warm soup"],
+elif menu=="💊 Medicine & Food Safety":
 
-    "Heart Health":["Oats","Avocado","Olive oil"]
-    }
+    st.markdown("# 💊 Medicine & Food Safety")
 
-    st.success("Recommended Foods")
+    medicine=st.selectbox("Select Medicine",medicine_list)
+    food=st.selectbox("Select Food",food_list)
 
-    for food in issue_food[issue]:
-        st.write("•",food)
+    st.markdown("---")
+
+    avoid=[]
+    safe=[]
+
+    if medicine in food_interactions:
+        avoid=food_interactions[medicine]["avoid"]
+        safe=food_interactions[medicine]["safe"]
+
+    col1,col2=st.columns(2)
+
+    with col1:
+        st.subheader("⚠ Foods To Avoid")
+        for f in avoid:
+            st.write(f"• {f}")
+
+    with col2:
+        st.subheader("✅ Safe Foods")
+        for f in safe:
+            st.write(f"• {f}")
+
+    st.markdown("---")
+
+    st.subheader("📌 Medicine Tips")
+
+    st.write("• Always take medicines with water")
+    st.write("• Avoid alcohol while taking medicines")
+    st.write("• Follow doctor prescriptions")
 
 # ---------------- HEALTHY MENU ----------------
 
-elif menu == "🥗 Healthy Menu":
+elif menu=="🥗 Healthy Menu":
 
-    st.title("🥗 Healthy Food Suggestions")
+    st.markdown("# 🥗 Healthy Menu")
 
-    col1,col2,col3 = st.columns(3)
+    col1,col2,col3=st.columns(3)
 
     with col1:
         st.image("https://images.unsplash.com/photo-1498837167922-ddd27525d352")
-        st.subheader("Vegetable Salad")
+        st.write("### Vegetable Salad")
         st.write("Calories: 150 kcal")
         st.write("Protein: 4g")
-        st.caption("Rich in vitamins and antioxidants")
 
     with col2:
         st.image("https://images.unsplash.com/photo-1504674900247-0877df9cc836")
-        st.subheader("Healthy Breakfast Bowl")
+        st.write("### Healthy Breakfast")
         st.write("Calories: 250 kcal")
         st.write("Protein: 8g")
-        st.caption("High protein fiber meal")
 
     with col3:
         st.image("https://images.unsplash.com/photo-1466637574441-749b8f19452f")
-        st.subheader("Fruit Nutrition Bowl")
-        st.write("Calories: 180 kcal")
-        st.write("Protein: 3g")
-        st.caption("Natural energy and hydration")
+        st.write("### Fruit Bowl")
+        st.write("Vitamin C Rich")
 
-    st.success("Healthy foods improve recovery when taking medications.")
+    st.markdown("---")
+
+    st.subheader("🥑 Superfoods")
+
+    st.write("• Avocado – supports heart health")
+    st.write("• Almonds – rich in healthy fats")
+    st.write("• Salmon – high Omega-3")
+    st.write("• Oats – good for cholesterol")
+    st.write("• Yogurt – improves gut health")
+
+    st.markdown("---")
+
+    st.subheader("🍎 Daily Nutrition Tips")
+
+    st.write("• Eat at least 5 servings of fruits and vegetables daily")
+    st.write("• Reduce sugar intake")
+    st.write("• Include protein in every meal")
+    st.write("• Avoid processed foods")
 
 # ---------------- MEAL PLAN ----------------
 
-elif menu == "🍽 Meal Plan":
+elif menu=="🍽 Meal Plan":
 
-    st.title("🍽 Weekly Meal Planner")
+    st.markdown("# 🍽 Weekly Meal Planner")
 
-    meal_data = {
-    "Day":["Mon","Tue","Wed","Thu","Fri"],
-    "Meal":["Oatmeal","Chicken Salad","Vegetable Soup","Grilled Fish","Fruit Bowl"]
+    meal_data={
+    "Day":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "Meal":[
+    "Oatmeal with Fruits",
+    "Chicken Salad",
+    "Vegetable Soup",
+    "Grilled Fish",
+    "Fruit Bowl",
+    "Avocado Toast",
+    "Salmon with Vegetables"]
     }
 
     st.table(pd.DataFrame(meal_data))
 
-# ---------------- FOOD DIARY ----------------
+    st.markdown("---")
 
-elif menu == "📓 Food Diary":
+    st.subheader("🥗 Healthy Eating Tips")
 
-    st.title("📓 Food Diary")
+    st.write("• Drink 2-3 liters of water daily")
+    st.write("• Maintain balanced diet")
+    st.write("• Exercise regularly")
+    st.write("• Avoid junk food")
 
-    food = st.text_input("Enter food you ate today")
+    st.markdown("---")
 
-    if st.button("Add Entry"):
-        st.success(food+" added to diary")
-
-# ---------------- EXERCISES ----------------
-
-elif menu == "🏋 Exercises":
-
-    st.title("🏋 Recommended Exercises")
-
-    col1,col2,col3 = st.columns(3)
+    col1,col2=st.columns(2)
 
     with col1:
-        st.image("https://images.unsplash.com/photo-1594737625785-cf0cbd5b7a0b")
-        st.write("Brisk Walking")
-        st.caption("30 minutes cardio exercise")
+        st.image("https://images.unsplash.com/photo-1546069901-ba9599a7e63c")
+        st.caption("Balanced Diet")
 
     with col2:
-        st.image("https://images.unsplash.com/photo-1517836357463-d25dfeac3438")
-        st.write("Dumbbell Squats")
-        st.caption("Strength training for legs")
-
-    with col3:
-        st.image("https://images.unsplash.com/photo-1599058917765-a780eda07a3e")
-        st.write("Stretching")
-        st.caption("Improves flexibility")
-
-# ---------------- PROGRESS ----------------
-
-elif menu == "📊 Progress":
-
-    st.title("📊 Weekly Progress")
-
-    st.write("Steps Goal Completion")
-    st.progress(75)
-
-    st.write("Workout Completion")
-    st.progress(60)
-
-# ---------------- HEALTH INSIGHTS ----------------
-
-elif menu == "🧠 Health Insights":
-
-    st.title("🧠 Health Insights")
-
-    st.warning("Always check food interactions before taking medication.")
-
-    st.success("Balanced meals improve medication effectiveness.")
-
-    st.info("Drink enough water and avoid mixing unknown foods with medicines.")
+        st.image("https://images.unsplash.com/photo-1512621776951-a57141f2eefd")
+        st.caption("Healthy Lifestyle Foods")
