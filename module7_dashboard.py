@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import plotly.express as px
 
 st.set_page_config(layout="wide")
 
@@ -121,6 +122,73 @@ if menu=="🏠 Dashboard":
 
     st.markdown("---")
 
+    col1,col2,col3,col4=st.columns(4)
+
+    with col1:
+        st.metric("Weight","78 kg","-1.2")
+
+    with col2:
+        st.metric("Steps","8050","+340")
+
+    with col3:
+        st.metric("Sleep","6.5 hrs","-0.4")
+
+    with col4:
+        st.metric("Water Intake","1.3 L","+0.3")
+
+    st.markdown("---")
+
+    # ---------------- WEEKLY HEALTH DATA ----------------
+
+    health_data=pd.DataFrame({
+        "Week":["Week 1","Week 2","Week 3","Week 4"],
+        "Weight":[80,79.5,78.7,78],
+        "Steps":[7200,7600,7900,8050],
+        "Sleep":[5.8,6.1,6.3,6.5],
+        "Water":[0.9,1.1,1.2,1.3]
+    })
+
+    st.subheader("📈 Weekly Health Insights")
+
+    fig=px.line(
+        health_data,
+        x="Week",
+        y=["Weight","Steps","Sleep","Water"],
+        markers=True,
+        template="plotly_dark",
+        color_discrete_sequence=["#6366f1","#f59e0b","#ef4444","#10b981"]
+    )
+
+    fig.update_traces(line=dict(width=4), marker=dict(size=10))
+
+    fig.update_layout(
+        height=420,
+        legend_title_text="Health Metrics",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        hovermode="x unified"
+    )
+
+    st.plotly_chart(fig,use_container_width=True)
+
+    # -------- GRAPH EXPLANATION (ADDED) --------
+
+    st.markdown("### 📊 Understanding the Health Trends")
+
+    st.write("🟡 **Steps Trend** – Displays physical activity levels through daily steps.")
+    st.write("🔴 **Sleep Trend** – Represents average sleep hours each week.")
+    st.write("🟢 **Water Intake** – Indicates hydration levels over time.")
+    st.write("🔵 **Weight Trend** – Shows how your body weight changes weekly.")
+
+    st.info("Tip: Increasing steps and water intake while maintaining good sleep helps manage weight effectively.")
+
+    st.markdown("---")
+
     col1,col2,col3=st.columns(3)
 
     with col1:
@@ -180,22 +248,6 @@ if menu=="🏠 Dashboard":
         st.markdown("### ✅ Recommended Foods")
         for f in safe:
             st.write(f"• {f}")
-
-    st.markdown("---")
-
-    col1,col2,col3,col4=st.columns(4)
-
-    with col1:
-        st.metric("Weight","78 kg","-1.2")
-
-    with col2:
-        st.metric("Steps","8050","+340")
-
-    with col3:
-        st.metric("Sleep","6.5 hrs","-0.4")
-
-    with col4:
-        st.metric("Water Intake","1.3 L","+0.3")
 
 # ---------------- MEDICINE & FOOD SAFETY ----------------
 
@@ -262,22 +314,21 @@ elif menu=="🥗 Healthy Menu":
 
     st.markdown("---")
 
-    st.subheader("🥑 Superfoods")
+    st.subheader("🥦 Nutritional Benefits")
 
-    st.write("• Avocado – supports heart health")
-    st.write("• Almonds – rich in healthy fats")
-    st.write("• Salmon – high Omega-3")
-    st.write("• Oats – good for cholesterol")
-    st.write("• Yogurt – improves gut health")
+    st.write("• Improves digestion")
+    st.write("• Boosts immune system")
+    st.write("• Helps maintain healthy body weight")
+    st.write("• Provides essential vitamins and minerals")
 
     st.markdown("---")
 
-    st.subheader("🍎 Daily Nutrition Tips")
+    st.subheader("🍎 Healthy Diet Tips")
 
-    st.write("• Eat at least 5 servings of fruits and vegetables daily")
-    st.write("• Reduce sugar intake")
-    st.write("• Include protein in every meal")
+    st.write("• Eat fruits and vegetables daily")
     st.write("• Avoid processed foods")
+    st.write("• Include protein in every meal")
+    st.write("• Maintain balanced nutrition")
 
 # ---------------- MEAL PLAN ----------------
 
@@ -303,19 +354,32 @@ elif menu=="🍽 Meal Plan":
 
     st.subheader("🥗 Healthy Eating Tips")
 
-    st.write("• Drink 2-3 liters of water daily")
+    st.write("• Drink 2–3 liters of water daily")
     st.write("• Maintain balanced diet")
     st.write("• Exercise regularly")
     st.write("• Avoid junk food")
 
     st.markdown("---")
 
-    col1,col2=st.columns(2)
+    st.subheader("🍏 Healthy Snack Ideas")
 
-    with col1:
-        st.image("https://images.unsplash.com/photo-1546069901-ba9599a7e63c")
-        st.caption("Balanced Diet")
+    st.write("• Mixed nuts")
+    st.write("• Yogurt with honey")
+    st.write("• Whole grain sandwiches")
 
-    with col2:
-        st.image("https://images.unsplash.com/photo-1512621776951-a57141f2eefd")
-        st.caption("Healthy Lifestyle Foods")
+    st.markdown("---")
+
+    st.subheader("💧 Hydration Reminder")
+
+    st.write("• Drink water every 2–3 hours")
+    st.write("• Carry a reusable water bottle")
+    st.write("• Increase water intake during exercise")
+
+    st.markdown("---")
+
+    st.subheader("🏃 Healthy Lifestyle Tips")
+
+    st.write("• Walk at least 8000 steps daily")
+    st.write("• Sleep 7–8 hours every night")
+    st.write("• Reduce sugar intake")
+    st.write("• Stay physically active")
